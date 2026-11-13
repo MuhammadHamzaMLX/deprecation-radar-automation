@@ -1,0 +1,7 @@
+# Paste your production pip dependencies here (e.g. the output of `pip freeze`), then push.
+# Only exact pins (name==version) can be checked; lines like `fastapi>=0.100` are reported as "not checked".
+# This file is only read as text by the radar: nothing here is ever installed or run.
+#
+# Example:
+# fastapi==0.115.0
+# httpx==0.28.1

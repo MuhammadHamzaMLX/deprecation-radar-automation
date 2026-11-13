@@ -1,0 +1,6 @@
+# The OpenAI model names your production code calls, one per line, exactly as in the API call. Then push.
+# The radar also checks its own research model (OPENAI_RESEARCH_MODEL) automatically.
+#
+# Example:
+# gpt-5.1
+# text-embedding-3-small
