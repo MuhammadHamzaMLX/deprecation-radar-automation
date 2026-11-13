@@ -1,0 +1,51 @@
+name: deprecation-radar
+
+on:
+  schedule:
+    - cron: "0 4 * * 2,4"   # Tuesday and Thursday, 04:00 UTC = 09:00 Pakistan time
+  workflow_dispatch:         # "Run workflow" button for a manual check
+
+# Read-only token; the job can't push, open issues, or touch other repos.
+permissions:
+  contents: read
+
+concurrency:
+  group: deprecation-radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # Actions are pinned to exact commits, so a hijacked tag can't change what runs here.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Restore last run's state (for NEW markers)
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: state
+          key: radar-state-${{ github.run_id }}
+          restore-keys: radar-state-
+
+      - name: Run checks and send email
+        # Standard library only: nothing is pip-installed. Secrets exist only inside this step.
+        run: python3 -m radar
+        env:
+          MAIL_MODE: graph
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_RESEARCH_MODEL: ${{ vars.OPENAI_RESEARCH_MODEL }}
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: state
+          key: radar-state-${{ github.run_id }}
